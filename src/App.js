@@ -75,22 +75,35 @@ export default class App extends PureComponent{
      return (
       <div>
 
+        <div className="header">
+          <div className="logo-container">
+            <img src="./img/logo2.png" />
+          </div>
+
+          <div className="website-title">
+            <span> Epaper | Srinagar Reporter</span>
+          </div>
+        </div>
+
         <div className="App">
           <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.1.266/build/pdf.worker.min.js">
-            <Viewer fileUrl={samplePDF} defaultScale={SpecialZoomLevel.PageFit} 
-            onPageChange={this.handlePageChange} 
-            currentPage={this.state.currentPage}  
-            theme={{
-                direction: TextDirection.RightToLeft,
-            }} 
-            pageIndex={4}
-            renderLoader={(percentages) => (
-              <div style={{ width: '240px' }}>
-                  <ProgressBar progress={Math.round(percentages)} />
-              </div>
-            )}
-            plugins={[ pageNavigationPlugin]}
-    />;
+            <Viewer 
+              // fileUrl={samplePDF} 
+              fileUrl={this.state.mediaUrl +this.state.epaper} 
+              defaultScale={SpecialZoomLevel.PageFit} 
+              onPageChange={this.handlePageChange} 
+              currentPage={this.state.currentPage}  
+              theme={{
+                  direction: TextDirection.RightToLeft,
+              }} 
+              pageIndex={4}
+              renderLoader={(percentages) => (
+                <div style={{ width: '240px' }}>
+                    <ProgressBar progress={Math.round(percentages)} />
+                </div>
+              )}
+              plugins={[ pageNavigationPlugin]}
+           />;
 
           </Worker>
         </div>
