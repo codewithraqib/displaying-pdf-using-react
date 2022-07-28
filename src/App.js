@@ -8,6 +8,16 @@ inside the app. Otherwise you can use the external link of the pdf file*/
 import samplePDF from "./sample.pdf";
 import "./styles.css";
 import { apiCall } from "./apiCall";
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import { Worker, Viewer,SpecialZoomLevel, TextDirection, ProgressBar} from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation';
+
+// Import styles
+import '@react-pdf-viewer/page-navigation/lib/styles/index.css';
+
+// Import styles
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 
 
@@ -15,14 +25,20 @@ const axios = require('axios');
 
 
 
-export default class App extends React.PureComponent{
+// const defaultLayoutPluginInstance = defaultLayoutPlugin();
+// const pageNavigationPluginInstance = pageNavigationPlugin({enableShortcuts: true});
+
+
+
+
+export default class App extends PureComponent{
 
 
   constructor(props){
     super(props)
 
 
-    this.state ={mediaUrl : null,epaper : null}
+    this.state ={mediaUrl : null,epaper : null, totalPages: 0, currentPage: 0}
 
     this.getData()
   }
@@ -32,7 +48,7 @@ export default class App extends React.PureComponent{
     apiCall({url: "https://epaper.srinagarreporter.in/admin/api/all-posts.php", 
     callback: res => {
       if(res && res.data && res.data.data){
-        console.log("result from api is---", res.data.data[0].EPaper)
+        console.log("result from api is---", res.data)
 
         this.setState({mediaUrl : res.data.mediaUrl,epaper : res.data.data[0].EPaper })
 
@@ -41,46 +57,81 @@ export default class App extends React.PureComponent{
   }
 
 
+  handlePageChange = (e) => {
+    console.log("result from api is---",e)
+
+    if(e.doc && e.doc._pdfInfo && e.doc._pdfInfo.numPages)
+    this.setState({totalPages: e.doc._pdfInfo.numPages, currentPage: e.currentPage +1})
+};
+
+
 
 
   // getLatestPost();
 
   render(){
+
+    let url = "https://epaper.srinagarreporter.in/admin/admin/postimages/fe1433694661ecb11dcad43b4c3ae3ed.pdf"
      return (
-    <div className="App">
-      {/* <h4>Single Page</h4> */}
+      <div>
 
-      <div className="header">
-        <div className="logo-container">
-          <img src="./img/logo2.png" />
+        <div className="App">
+          <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.1.266/build/pdf.worker.min.js">
+            <Viewer fileUrl={samplePDF} defaultScale={SpecialZoomLevel.PageFit} 
+            onPageChange={this.handlePageChange} 
+            currentPage={this.state.currentPage}  
+            theme={{
+                direction: TextDirection.RightToLeft,
+            }} 
+            pageIndex={4}
+            renderLoader={(percentages) => (
+              <div style={{ width: '240px' }}>
+                  <ProgressBar progress={Math.round(percentages)} />
+              </div>
+            )}
+            plugins={[ pageNavigationPlugin]}
+    />;
+
+          </Worker>
         </div>
 
-        <div className="website-title">
-          <span> Epaper | Srinagar Reporter</span>
+
+        <div style={styles.flex}>
+          {/* <div style={styles.button}>
+            <span >Prev</span>
+          </div> */}
+
+          <div>
+            <span>{ "Page "+this.state.currentPage +"/"+this.state.totalPages}</span>
+          </div>
+          {/* <div style={styles.button}>
+            <span >Next</span>
+          </div> */}
         </div>
       </div>
-      {/* <SinglePagePDFViewer pdf={samplePDF} /> */}
-      {/* <SinglePagePDFViewer pdf={{URL: {url: 'https://www.kashmiruniversity.net/events/6455.pdf' }} } /> */}
-
-      {this.state.epaper && 
-      <SinglePagePDFViewer pdf={this.state.mediaUrl+this.state.epaper} />}
-
-      {/* <hr /> */}
-
-      {/* <h4>All Pages</h4>
-      <div className="all-page-container">
-        <AllPagesPDFViewer pdf={samplePDF} />
-      </div>
-
-      <hr />
-
-      <h4>Base 64 Single Page</h4>
-      <SinglePagePDFViewer pdf={sampleBase64pdf} />
-
-      <hr /> */}
-    </div>
+    
   );
 
   }
  
+}
+
+
+const styles = {
+
+
+  flex:{
+    display:"flex",
+    justifyContent:"center",
+    alignItems:"center"
+  },
+  button:{
+    padding:10,
+    paddingLeft: 16,
+    paddingRight: 16,
+    backgroundColor:"blue",
+    borderRadius: 8,
+    color:"white",
+    margin: 10
+  }
 }
